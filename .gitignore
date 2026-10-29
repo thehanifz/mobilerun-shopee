@@ -1,0 +1,32 @@
+# Environments and secrets
+.env
+*.env
+!config.example.env
+service_account.json
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Temporary and log files
+*.log
+queue.csv
+!queue_example.csv
+temp/
+tmp/
+*.mp4
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
