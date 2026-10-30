@@ -6,7 +6,7 @@ yang digerakkan AI. Video tetap di-upload dari aplikasi Shopee resmi di HP
 
 ## Cara tercepat (1 perintah)
 
-1. Extract ZIP ke mis. `C:\shopee-uploader`
+1. Letakkan folder ini di mana saja di komputer Anda (mis. `C:\Users\...\mobilerun-shopee`)
 2. Salin `config.example.env` → `.env`, isi (IP 9Router, IP HP, Sheet ID, dll.)
 3. Double-click **`start.bat`** — selesai. Pertama kali jalan otomatis:
    install (uv, Python, ADB, Mobilerun), pairing HP via WiFi, install Portal APK.
@@ -81,8 +81,8 @@ OpenAI-compatible — Mobilerun resmi mendukung model OpenAI-compatible.
    share sheet "Daftar video afiliet" ke email service account itu
    (akses Editor). Isi path JSON di `.env`.
 6. **Task Scheduler:** buat task "ShopeeUploader" → trigger tiap 10 menit →
-   action `pythonw.exe C:\shopee-uploader\uploader.py`. Atau jalankan manual
-   untuk tes pertama: `python uploader.py --once`.
+   action `pythonw.exe <path-ke-folder>\uploader.py`. Atau lebih praktis cukup
+   jalankan **`start.bat`**, atau tes manual: `python uploader.py --once`.
 
 ## Pengaman (anti-ban)
 

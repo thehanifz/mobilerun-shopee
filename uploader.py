@@ -34,7 +34,15 @@ ENV = load_env(ENV_PATH)
 def E(k, default=""):
     return os.environ.get(k, ENV.get(k, default))
 
-WORK = Path(E("WORK_DIR", str(BASE / "work"))); WORK.mkdir(parents=True, exist_ok=True)
+def resolve_path(p_str, default=None):
+    raw = p_str if (p_str and str(p_str).strip()) else default
+    if not raw:
+        return None
+    p = Path(raw)
+    return p if p.is_absolute() else (BASE / p).resolve()
+
+WORK = resolve_path(E("WORK_DIR"), default="work")
+WORK.mkdir(parents=True, exist_ok=True)
 STATE_PATH = WORK / "state.json"
 
 # Nama kolom di Google Sheet (sesuaikan bila header diubah)
@@ -61,7 +69,10 @@ def get_sheet():
     import gspread
     from google.oauth2.service_account import Credentials
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    creds = Credentials.from_service_account_file(E("GOOGLE_SA_JSON"), scopes=scopes)
+    sa_path = resolve_path(E("GOOGLE_SA_JSON"), default="service-account.json")
+    if not sa_path or not sa_path.exists():
+        raise FileNotFoundError(f"File service account Google tidak ditemukan di: {sa_path}")
+    creds = Credentials.from_service_account_file(str(sa_path), scopes=scopes)
     gc = gspread.authorize(creds)
     return gc.open_by_key(E("SHEET_ID")).worksheet(E("WORKSHEET", "Sheet1"))
 
@@ -81,9 +92,21 @@ def sh(cmd, **kw):
 def adb(*args):
     return sh(["adb", "-s", E("ADB_DEVICE"), *args])
 
+def format_drive_url(url):
+    url = (url or "").strip()
+    # Otomatis ubah link sharing Google Drive menjadi link download langsung
+    m = re.search(r"drive\.google\.com/file/d/([a-zA-Z0-9_-]+)", url)
+    if m:
+        return f"https://drive.google.com/uc?export=download&id={m.group(1)}"
+    m = re.search(r"drive\.google\.com/open\?id=([a-zA-Z0-9_-]+)", url)
+    if m:
+        return f"https://drive.google.com/uc?export=download&id={m.group(1)}"
+    return url
+
 def download_video(url, dest):
-    # Link Drive langsung (uc?export=download) atau URL file biasa
-    with requests.get(url, stream=True, timeout=120) as r:
+    # Link Drive langsung (uc?export=download) atau URL file biasa (< 50MB)
+    direct_url = format_drive_url(url)
+    with requests.get(direct_url, stream=True, timeout=120) as r:
         r.raise_for_status()
         with open(dest, "wb") as f:
             for chunk in r.iter_content(1 << 20):

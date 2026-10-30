@@ -8,8 +8,8 @@
   HP Android & PC harus di WiFi yang sama, Wireless debugging sudah nyala.
 #>
 $ErrorActionPreference = "Stop"
-$BaseDir = "C:\shopee-uploader"
-New-Item -ItemType Directory -Force -Path $BaseDir, "$BaseDir\work" | Out-Null
+$BaseDir = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+New-Item -ItemType Directory -Force -Path "$BaseDir\work" | Out-Null
 Set-Location $BaseDir
 
 Write-Host "== 1/6 Install uv ==" -ForegroundColor Cyan
@@ -30,7 +30,10 @@ if (-not (Test-Path "$ptools\adb.exe")) {
     Remove-Item $zip
 }
 $env:Path = "$ptools;$env:Path"
-[Environment]::SetEnvironmentVariable("Path", "$ptools;" + [Environment]::GetEnvironmentVariable("Path", "User"), "User")
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($userPath -notlike "*$ptools*") {
+    [Environment]::SetEnvironmentVariable("Path", "$ptools;$userPath", "User")
+}
 adb version
 
 Write-Host "== 4/6 Install Mobilerun ==" -ForegroundColor Cyan
